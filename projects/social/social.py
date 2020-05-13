@@ -1,6 +1,12 @@
+from util import Queue
+
+from random import randint
+
+
 class User:
     def __init__(self, name):
         self.name = name
+
 
 class SocialGraph:
     def __init__(self):
@@ -45,8 +51,15 @@ class SocialGraph:
         # !!!! IMPLEMENT ME
 
         # Add users
+        for user in range(num_users):
+            self.add_user(user)
 
         # Create friendships
+        for user in range(num_users):
+            for num_friends in range(randint(0, (avg_friendships * 2) - 1)):
+                random_friend = randint(1, num_users)
+                if random_friend != user + 1 and random_friend not in self.friendships[user + 1]:
+                    self.add_friendship(user + 1, random_friend)
 
     def get_all_social_paths(self, user_id):
         """
@@ -57,8 +70,38 @@ class SocialGraph:
 
         The key is the friend's ID and the value is the path.
         """
-        visited = {}  # Note that this is a dictionary, not a set
-        # !!!! IMPLEMENT ME
+
+        visited = {}
+
+        for user in self.users:
+
+            q = Queue()
+
+            q.enqueue([user_id])
+
+            temp_visited = set()
+
+            while q.size() > 0:
+                path = q.dequeue()
+                vertex = path[-1]
+
+                if vertex not in temp_visited:
+                    temp_visited.add(vertex)
+
+                    if vertex == user:
+                        break
+
+                    for neighbor in self.friendships[vertex]:
+                        path_copy = path.copy()
+                        path_copy.append(neighbor)
+                        q.enqueue(path_copy)
+
+            visited[user] = path
+
+        for user, path in visited.copy().items():
+            if user not in path:
+                visited.pop(user)
+
         return visited
 
 
@@ -68,3 +111,11 @@ if __name__ == '__main__':
     print(sg.friendships)
     connections = sg.get_all_social_paths(1)
     print(connections)
+
+    sg2 = SocialGraph()
+    sg2.populate_graph(1000, 5)
+    print(sg2.friendships)
+    connections2 = sg2.get_all_social_paths(1)
+    print(connections2)
+    print(len(connections2.keys()))
+    print("Possible Stretch accidental completion???")
